@@ -70,31 +70,32 @@ def search_csv_files_for_term(sourceDir=sourceDir, search_terms=searchTerms, sav
                 # df_pan = pd.read_csv(full_path, header=1)
                 # df_pls = pl.read_csv(full_path, has_header=True, truncate_ragged_lines=True, skip_rows=1) # In-memory
                 
-                df = pl.scan_csv(full_path, skip_rows=1, has_header=True).collect() # Lazily loaded
-                cols = df.columns
+                # df = pl.scan_csv(full_path, skip_rows=1, has_header=True).collect() # Lazily loaded
+                df = pl.scan_csv(full_path, skip_rows=1, has_header=True)
+                # cols = df.columns
                 print('-'*10)
                 print("All emails in file:")
                 print(df.select(["Email Address"]).filter(pl.col("Email Address").is_not_null())
-                        .group_by('Email Address').count())
+                        .group_by('Email Address').count().collect())
                 print("All last names in file:")
                 print(df.select(["Last Name"]).filter(pl.col("Last Name").is_not_null())
-                        .group_by('Last Name').count())
+                        .group_by('Last Name').count().collect())
                 print("Matches and date found:")
-                print(df.select(['Created Date', 'Email Address', 'Last Name']).filter(pl.col("Email Address").str.contains(search_terms[0])))
+                print(df.select(['Created Date', 'Email Address', 'Last Name']).filter(pl.col("Email Address").str.contains(search_terms[0])).collect())
                 
-                # Aggregate by "Last Name" and cast to i64
+                # Aggregate by "Email Address" and cast to i64
                 res = df.select(["Email Address", "Last Name"]).filter(
                     (pl.col("Email Address").str.contains(search_terms[0])) &
                     (pl.col("Email Address").is_not_null())
                 ).group_by(["Email Address"]).agg(
                     count_email=pl.col("Email Address").count().cast(pl.Int64)
-                )
+                ).collect()
 
                 # select, filter total count matching search terms && cast to i64
                 filtered_df = df.select(["Email Address", "Last Name"]).filter(
                     (pl.col("Email Address").str.contains(search_terms[0])) &
                     (pl.col("Email Address").is_not_null())
-                )
+                ).collect()
                 total_count = filtered_df.shape[0]
                 print(f"Matches found: {total_count}")
                 print('-'*10)
