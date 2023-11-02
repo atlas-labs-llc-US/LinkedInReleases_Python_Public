@@ -38,7 +38,10 @@ def save_results_csv(filename, df, directory=destinationDir):
     Save the provided polars DataFrame to a CSV file.
     """
     filepath = os.path.join(directory, filename)
+    
+    # Use Polars' to_csv function to save DataFrame to CSV
     df.write_csv(filepath)
+    
     print(f"Results saved to CSV: {filepath}")       
 
 def search_csv_files_for_term(sourceDir=sourceDir, search_terms=searchTerms, save_file=results_file):
@@ -121,7 +124,8 @@ def search_csv_files_for_term(sourceDir=sourceDir, search_terms=searchTerms, sav
                 print('-'*40)
                 
     except Exception as e:
-        error_message = f"An error occurred during the file search: {str(e)}" # Capture the error message
+        # Capture the error message
+        error_message = f"An error occurred during the file search: {str(e)}"
 
     print(f'*'*25 + " Search Results " + '*'*25)
     print(f"Total files reviewed: {totalFileCount}")
@@ -133,9 +137,10 @@ def search_csv_files_for_term(sourceDir=sourceDir, search_terms=searchTerms, sav
     print(f'*'*25 + "="*15 + '*'*25)
     print(f'*'*25 + "="*15 + '*'*25)
 
-    save_results_csv(results_file_csv, filtered_df_with_filename)
+    save_results_csv(results_file_csv, df_c)
 
-    if error_message: # If there was an error, print the error message
+    # If there was an error, print the error message
+    if error_message:
         print(error_message)
 
     return totalFileCount, csvFileNamesReviewed, df_c.shape[0]
